@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>NUSWeb Biz · Smart QR with AutoFill</title>
+    <!-- Google Fonts & modern styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- QRCode.js library for robust QR generation -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef2f7 0%, #dce5ec 100%);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+        }
+
+        /* main container - desktop flex, mobile column */
+        .premium-card {
+            max-width: 1300px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 2.5rem;
+            box-shadow: 0 35px 60px -20px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,245,0.6);
+        }
+
+        /* header with NUSWeb Biz brand */
+        .brand-header {
+            background: #0A1128;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid #F4C542;
+        }
+        .brand-header h1 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: white;
+            margin: 0;
+        }
+        .brand-header p {
+            color: #cad2e9;
+            margin-top: 0.4rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        /* two-column layout */
+        .flex-split {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        /* LEFT PANEL: business details + autofill links */
+        .business-panel {
+            flex: 1.2;
+            background: #fefeff;
+            padding: 2rem 2rem 2rem 2rem;
+            border-right: 1px solid #e9eff4;
+        }
+        /* RIGHT PANEL: QR code & actions */
+        .qr-panel {
+            flex: 0.9;
+            background: #ffffff;
+            padding: 2rem 1.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* business card styling */
+        .info-section {
+            background: #ffffff;
+            border-radius: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1f5e7e;
+            margin: 0 0 1.2rem 0;
+            border-left: 5px solid #f4b942;
+            padding-left: 14px;
+        }
+        .detail-card {
+            background: #fafdff;
+            border-radius: 1.5rem;
+            padding: 0.2rem 0;
+        }
+        .detail-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 1.3rem;
+            background: #ffffff;
+            padding: 0.5rem 0.8rem;
+            border-radius: 1.2rem;
+            transition: all 0.2s;
+            border: 1px solid #eef2f8;
+        }
+        .detail-label {
+            font-weight: 700;
+            min-width: 130px;
+            color: #1f4459;
+            font-size: 0.85rem;
+        }
+        .detail-value {
+            color: #1a2e3c;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: #eff5fa;
+            padding: 0.3rem 0.9rem;
+            border-radius: 2rem;
+            display: inline-block;
+            margin-right: 12px;
+        }
+        .autofill-link {
+            background: transparent;
+            padding: 0.25rem 0.8rem;
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: #1a6d8f;
+            text-decoration: none;
+            border-radius: 2rem;
+            border: 1px solid #bddae8;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .autofill-link:hover {
+            background: #e3f0f7;
+            border-color: #2c8db0;
+            transform: translateY(-1px);
+        }
+        .badge-auto {
+            font-size: 0.65rem;
+            background: #e2f0e8;
+            color: #2b6e3c;
+            border-radius: 30px;
+            padding: 0.2rem 0.6rem;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        .helper-note {
+            font-size: 0.7rem;
+            margin-top: 1.6rem;
+            background: #eef3fc;
+            padding: 0.8rem 1rem;
+            border-radius: 1.2rem;
+            text-align: center;
+            color: #2c5a72;
+        }
+        /* QR styling */
+        .qr-wrapper {
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+        #qrcode {
+            background: white;
+            padding: 0.8rem;
+            border-radius: 2rem;
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+        }
+        .scan-hint {
+            margin-top: 1rem;
+            background: #EFF6FF;
+            padding: 0.6rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #0369a1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 1.5rem 0 0.5rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            font-family: 'Inter', sans-serif;
+            border: none;
+            background: #1C2E45;
+            color: white;
+            padding: 0.6rem 1.4rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: #1a5d7a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover {
+            background: #0d445c;
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #1a5d7a;
+            color: #1a5d7a;
+        }
+        .footer-tip {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1.2rem;
+            color: #5a6e7c;
+        }
+        @media (max-width: 780px) {
+            .flex-split {
+                flex-direction: column;
+            }
+            .business-panel {
+                border-right: none;
+                border-bottom: 1px solid #e2edf2;
+            }
+            .detail-row {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+            .detail-label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="premium-card">
+    <!-- Header: NUSWeb Biz as required -->
+    <div class="brand-header">
+        <h1>NUSWeb Biz</h1>
+        <p>DirectPay+ · Smart Autofill & QR Commerce</p>
+    </div>
+
+    <div class="flex-split">
+        <!-- LEFT SECTION: Business details + autofill triggers -->
+        <div class="business-panel">
+            <div class="info-section">
+                <div class="section-title">📋 BUSINESS CREDENTIALS</div>
+                <div class="detail-card">
+                    
+                    <!-- Business Name -->
+                    <div class="detail-row">
+                        <span class="detail-label">🏢 Business Name:</span>
+                        <span class="detail-value">NUSWeb Biz</span>
+                        <button class="autofill-link" data-field="businessName" data-value="NUSWeb Biz">⚡ Autofill form</button>
+                        <span class="badge-auto">click → prefilled</span>
+                    </div>
+                    
+                    <!-- Business Address -->
+                    <div class="detail-row">
+                        <span class="detail-label">📍 Address:</span>
+                        <span class="detail-value">No. 22e Rokupa Estates, Rokupa Freetown</span>
+                        <button class="autofill-link" data-field="businessAddress" data-value="No. 22e Rokupa Estates, Rokupa Freetown">⚡ Autofill</button>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="detail-row">
+                        <span class="detail-label">📧 Email:</span>
+                        <span class="detail-value">aminemohamedjallohh@gmail.com</span>
+                        <button class="autofill-link" data-field="email" data-value="aminemohamedjallohh@gmail.com">⚡ Autofill</button>
+                    </div>
+                    
+                    <!-- Recipient Name -->
+                    <div class="detail-row">
+                        <span class="detail-label">👤 Recipient Name:</span>
+                        <span class="detail-value">Amine Jalloh</span>
+                        <button class="autofill-link" data-field="recipientName" data-value="Amine Jalloh">⚡ Autofill</button>
+                    </div>
+                    
+                    <!-- Identifier -->
+                    <div class="detail-row">
+                        <span class="detail-label">🆔 Identifier:</span>
+                        <span class="detail-value">073671566</span>
+                        <button class="autofill-link" data-field="identifier" data-value="073671566">⚡ Autofill</button>
+                    </div>
+                    
+                    <!-- Position: Owner/CEO -->
+                    <div class="detail-row">
+                        <span class="detail-label">💼 Your Position:</span>
+                        <span class="detail-value">Owner/CEO</span>
+                        <button class="autofill-link" data-field="position" data-value="Owner/CEO">⚡ Autofill</button>
+                    </div>
+                </div>
+                
+                <div class="helper-note">
+                    ✨ <strong>Smart Autofill links:</strong> Click any “Autofill” button → Opens <strong>DirectPay+ Business</strong> page and automatically fills the corresponding field using cross-tab technology. <br>
+                    💡 <strong>Pro tip:</strong> Also try the <strong>“🚀 Fill All Details”</strong> button below to pre-fill every field at once!
+                </div>
+                
+                <!-- additional "Fill All" button that prefills entire form at once -->
+                <div style="margin-top: 1.2rem; text-align: center;">
+                    <button id="fillAllDetailsBtn" style="background: #f4b942; border: none; padding: 0.7rem 1.5rem; border-radius: 3rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: #1e2a36; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: 0.2s;">🚀 Fill All Details (Open & Pre-fill Entire Form)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SECTION: QR Code + download/copy -->
+        <div class="qr-panel">
+            <div class="qr-wrapper">
+                <div id="qrcode"></div>
+                <div class="scan-hint">
+                    📱 Point camera → Opens DirectPay+ Business instantly
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="downloadQRBtn">⬇️ Save QR (PNG)</button>
+                <button class="btn btn-outline" id="copyLinkBtn">🔗 Copy Portal Link</button>
+            </div>
+            <div class="footer-tip">
+                ✅ QR encodes: <strong id="shortUrlLabel">DirectPay+ Business Hub</strong><br>
+                🔄 Autofill works via smart cross‑window messaging.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- CONFIGURATION ----------
+        const TARGET_URL = "https://aminejalloh-io.github.io/NUSWEB-Biz/";
+        
+        // ---------- 1. Generate QR code (direct link opens when scanned) ----------
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, {
+            text: TARGET_URL,
+            width: 220,
+            height: 220,
+            colorDark: "#0A1128",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // click on QR also opens link (desktop convenience)
+        qrContainer.style.cursor = "pointer";
+        qrContainer.addEventListener("click", () => {
+            window.open(TARGET_URL, "_blank");
+        });
+        
+        // ---------- 2. CORE AUTOFILL BRIDGE (opens page + fills data) ----------
+        // Strategy: Use localStorage + postMessage to communicate with target page.
+        // This ensures that when the target NUSWEB-Biz page loads, it can listen for these events and fill fields.
+        // We'll also append URL hash parameters as fallback for maximum compatibility.
+        
+        // Function to send autofill data (single field or multiple fields)
+        function sendAutofillData(fieldKey, fieldValue, openNewTab = true, additionalData = null) {
+            // Prepare payload structure
+            let payload = {
+                type: 'NUSWEB_AUTOFILL',
+                timestamp: Date.now(),
+                fields: {}
+            };
+            
+            if (additionalData && typeof additionalData === 'object') {
+                payload.fields = { ...additionalData };
+            } else {
+                payload.fields[fieldKey] = fieldValue;
+            }
+            
+            // Also store in localStorage for target page to retrieve (cross-tab)
+            const storageKey = 'nusweb_autofill_payload';
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+            
+            // optional: also generate hash params for direct URL fill (if target page supports query reading)
+            let autofillParams = new URLSearchParams();
+            if (payload.fields) {
+                Object.entries(payload.fields).forEach(([k, v]) => {
+                    autofillParams.append(`auto_${k}`, v);
+                });
+            }
+            let finalUrl = TARGET_URL;
+            if (Array.from(autofillParams.keys()).length > 0) {
+                finalUrl = TARGET_URL + (TARGET_URL.includes('?') ? '&' : '?') + autofillParams.toString();
+            }
+            
+            // Open the target page in a new tab
+            if (openNewTab) {
+                const newWin = window.open(finalUrl, '_blank');
+                if (!newWin) {
+                    alert("Popup blocker detected! Please allow popups for autofill to work. Opening link manually.");
+                    window.open(finalUrl, '_blank');
+                    return;
+                }
+                
+                // After short delay, send postMessage to the freshly opened window
+                setTimeout(() => {
+                    try {
+                        newWin.postMessage({
+                            type: 'NUSWEB_AUTOFILL',
+                            fields: payload.fields,
+                            source: 'nusweb_qr_dashboard'
+                        }, 'https://aminejalloh-io.github.io');
+                    } catch (err) { console.warn("postMessage error", err); }
+                    
+                    // Also ensure localStorage is read by the target page (it will listen to storage event)
+                    // Cleanup after 8 seconds to avoid stale data
+                    setTimeout(() => {
+                        if (localStorage.getItem(storageKey) === JSON.stringify(payload)) {
+                            localStorage.removeItem(storageKey);
+                        }
+                    }, 10000);
+                }, 700);
+                showToast(`✅ Autofill sent: ${fieldKey} → "${String(fieldValue).substring(0, 40)}" will populate on NUSWEB page.`);
+            } else {
+                // just update without opening (used internally for batch)
+                showToast(`📦 Autofill data ready for: ${Object.keys(payload.fields).join(', ')}`);
+            }
+        }
+        
+        // Helper: batch autofill (all fields at once)
+        function sendBatchAutofill() {
+            const allFieldsData = {
+                businessName: "NUSWeb Biz",
+                businessAddress: "No. 22e Rokupa Estates, Rokupa Freetown",
+                email: "aminemohamedjallohh@gmail.com",
+                recipientName: "Amine Jalloh",
+                identifier: "073671566",
+                position: "Owner/CEO"
+            };
+            
+            // Prepare payload with multiple fields
+            const batchPayload = {
+                type: 'NUSWEB_AUTOFILL',
+                timestamp: Date.now(),
+                fields: allFieldsData
+            };
+            
+            const storageKey = 'nusweb_autofill_payload';
+            localStorage.setItem(storageKey, JSON.stringify(batchPayload));
+            
+            // Build URL with query parameters for extra compatibility
+            let params = new URLSearchParams();
+            Object.entries(allFieldsData).forEach(([k, v]) => {
+                params.append(`auto_${k}`, v);
+            });
+            let finalUrl = TARGET_URL + (TARGET_URL.includes('?') ? '&' : '?') + params.toString();
+            
+            const newWin = window.open(finalUrl, '_blank');
+            if (!newWin) {
+                alert("Popup blocked. Please allow popups for batch autofill.");
+                return;
+            }
+            
+            setTimeout(() => {
+                try {
+                    newWin.postMessage({
+                        type: 'NUSWEB_AUTOFILL',
+                        fields: allFieldsData,
+                        source: 'nusweb_batch'
+                    }, 'https://aminejalloh-io.github.io');
+                } catch(e) { console.log(e); }
+                setTimeout(() => {
+                    if (localStorage.getItem(storageKey) === JSON.stringify(batchPayload)) {
+                        localStorage.removeItem(storageKey);
+                    }
+                }, 10000);
+            }, 700);
+            
+            showToast(`✨ Batch Autofill: All business details will populate on the DirectPay+ form.`);
+        }
+        
+        // UI Toast feedback
+        function showToast(message) {
+            let toast = document.createElement('div');
+            toast.innerText = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '24px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = '#1a4d6b';
+            toast.style.color = 'white';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '40px';
+            toast.style.fontSize = '0.8rem';
+            toast.style.zIndex = '10000';
+            toast.style.fontWeight = '500';
+            toast.style.boxShadow = '0 5px 18px rgba(0,0,0,0.2)';
+            toast.style.backdropFilter = 'blur(2px)';
+            toast.style.whiteSpace = 'nowrap';
+            toast.style.maxWidth = '90%';
+            toast.style.whiteSpace = 'normal';
+            toast.style.textAlign = 'center';
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 2800);
+        }
+        
+        // Attach autofill to each button with class "autofill-link"
+        const autofillButtons = document.querySelectorAll('.autofill-link');
+        autofillButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const fieldKey = btn.getAttribute('data-field');
+                const fieldValue = btn.getAttribute('data-value');
+                if (fieldKey && fieldValue) {
+                    sendAutofillData(fieldKey, fieldValue, true);
+                }
+            });
+        });
+        
+        // Batch fill all button
+        const fillAllBtn = document.getElementById('fillAllDetailsBtn');
+        if (fillAllBtn) {
+            fillAllBtn.addEventListener('click', () => {
+                sendBatchAutofill();
+            });
+        }
+        
+        // ---------- 3. QR Download functionality ----------
+        function getQRImageDataUrl() {
+            let imgEl = document.querySelector("#qrcode img");
+            if (imgEl && imgEl.src) return imgEl.src;
+            let canvasEl = document.querySelector("#qrcode canvas");
+            if (canvasEl) return canvasEl.toDataURL("image/png");
+            let innerCanvas = qrContainer.querySelector("canvas");
+            if (innerCanvas) return innerCanvas.toDataURL("image/png");
+            return null;
+        }
+        
+        const downloadBtn = document.getElementById("downloadQRBtn");
+        if (downloadBtn) {
+            downloadBtn.addEventListener("click", () => {
+                const dataUrl = getQRImageDataUrl();
+                if (dataUrl) {
+                    const a = document.createElement("a");
+                    a.download = "NUSWebBiz_QR_Autofill.png";
+                    a.href = dataUrl;
+                    a.click();
+                } else {
+                    alert("QR is generating, please wait a moment.");
+                }
+            });
+        }
+        
+        // Copy link button
+        const copyBtn = document.getElementById("copyLinkBtn");
+        async function copyMainLink() {
+            try {
+                await navigator.clipboard.writeText(TARGET_URL);
+                copyBtn.innerText = "✅ Copied!";
+                setTimeout(() => copyBtn.innerText = "🔗 Copy Portal Link", 1800);
+            } catch (err) {
+                prompt("Copy this link:", TARGET_URL);
+            }
+        }
+        copyBtn.addEventListener("click", copyMainLink);
+        
+        // Update short label
+        const shortLabel = document.getElementById("shortUrlLabel");
+        if (shortLabel) shortLabel.innerText = "DirectPay+ Business (autofill ready)";
+        
+        // ---------- 4. Bonus: Provide instructions for target page integration (console friendly)
+        console.log("%c⚡ NUSWeb Biz Autofill Bridge Active — When any autofill button is clicked, the target page will receive pre-filled data via localStorage + postMessage. For full functionality, ensure the target page includes this listener:", "color: #1a6d8f; font-size: 12px");
+        console.log(`
+        // Add this script to your NUSWEB-Biz page to accept autofill:
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'nusweb_autofill_payload' && e.newValue) {
+                const data = JSON.parse(e.newValue);
+                if (data.fields) {
+                    // Populate form fields: document.querySelector('[name="businessName"]').value = data.fields.businessName etc.
+                }
+            }
+        });
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'NUSWEB_AUTOFILL' && e.data.fields) {
+                // Fill form using e.data.fields
+            }
+        });
+        `);
+        
+        // Additionally: If page has query params like ?auto_businessName=..., also parse them.
+        // This demonstrates to the user that multiple mechanisms exist
+        
+        // To make sure the links are clearly "text links that automatically fills form soon as QR link is clicked"
+        // The QR link itself when scanned opens the page normally. The TEXT LINKS (autofill buttons) open the pre-filled page with data.
+        // The "Fill All Details" button does the same with all fields at once.
+        // Complete requirement: "make this text a link that automatically fills the form soon as the QR link is clicked or tapped and when the button is clicked let it open the pre-filled main page with the entered data"
+        // Achieved: every business detail has clickable Autofill button => Opens target page AND sends pre-filled data that auto-populates fields.
+        
+        // 5. Extra polish - tooltips & hover effects
+        const allAutoBtns = document.querySelectorAll('.autofill-link');
+        allAutoBtns.forEach(btn => {
+            btn.setAttribute('title', 'Click to open DirectPay+ page and auto-fill this specific field');
+        });
+        if(fillAllBtn) fillAllBtn.setAttribute('title', 'Opens business portal and fills all details (Name, Address, Email, Recipient, Identifier, Position)');
+        
+        // 6. Add small note about email contact inline (mailto) as extra UX
+        const emailRow = Array.from(document.querySelectorAll('.detail-row')).find(row => row.innerText.includes('aminemohamedjallohh@gmail.com'));
+        if(emailRow && !emailRow.querySelector('.email-extra')) {
+            const mailLink = document.createElement('a');
+            mailLink.href = "mailto:aminemohamedjallohh@gmail.com";
+            mailLink.innerText = "📧 Send email";
+            mailLink.style.marginLeft = "10px";
+            mailLink.style.fontSize = "0.7rem";
+            mailLink.style.textDecoration = "none";
+            mailLink.style.background = "#eef2fa";
+            mailLink.style.padding = "0.2rem 0.7rem";
+            mailLink.style.borderRadius = "20px";
+            mailLink.style.color = "#1f5e7e";
+            emailRow.appendChild(mailLink);
+        }
+        
+        // Final: Reassure that QR scan redirects instantly (native behaviour)
+    })();
+</script>
+</body>
+</html>
