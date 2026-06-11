@@ -237,6 +237,7 @@
       font-size: 0.8rem;
       width: 100%;
       max-width: 100%;
+      background: white;
     }
 
     @media (min-width: 640px) {
@@ -483,6 +484,12 @@
     .autofill-row button:active {
       transform: scale(0.97);
     }
+
+    /* Highlight animation */
+    .highlight-field {
+      transition: background 0.2s;
+      background-color: #d9f0ec !important;
+    }
   </style>
 </head>
 <body>
@@ -502,7 +509,7 @@
         <div class="autofill-row">
           <button id="autofillNuswebBtn">⚡ Autofill NUSWEB Business Details</button>
         </div>
-        <p style="font-size:0.7rem; margin-top:0.6rem; color:#155e75;">Click to instantly fill the form with NUSWEB Biz credentials</p>
+        <p style="font-size:0.7rem; margin-top:0.6rem; color:#155e75;">Click to instantly fill all fields including Position: Owner/CEO</p>
       </div>
       
       <div class="form-group"><label>🏢 Business name *</label><input type="text" id="partnershipBizName" placeholder="Legal business name"></div>
@@ -510,15 +517,17 @@
       <div class="form-group"><label>📧 Email address *</label><input type="email" id="partnershipEmail" placeholder="contact@business.com"></div>
       <div class="form-group"><label>👤 Recipient Name *</label><input type="text" id="partnershipRecipientName" placeholder="Full name of recipient"></div>
       <div class="form-group"><label>📞 9-digit phone OR 6-digit agent code *</label><input type="text" id="partnershipIdentifier" placeholder="e.g., 761234567 or 892345"><div id="partnershipIdentifierError" class="error-text"></div></div>
-      <div class="form-group"><label>💼 Your position *</label><select id="partnershipPosition">
-        <option value="" disabled selected>– Select –</option>
-        <option value="Owner / CEO">Owner / CEO</option>
-        <option value="Manager">Manager</option>
-        <option value="Accountant">Accountant</option>
-        <option value="Sales Representative">Sales Representative</option>
-        <option value="Operations Lead">Operations Lead</option>
-        <option value="Administrator">Administrator</option>
-      </select></div>
+      <div class="form-group"><label>💼 Your position *</label>
+        <select id="partnershipPosition">
+          <option value="" disabled selected>– Select –</option>
+          <option value="Owner / CEO">Owner / CEO</option>
+          <option value="Manager">Manager</option>
+          <option value="Accountant">Accountant</option>
+          <option value="Sales Representative">Sales Representative</option>
+          <option value="Operations Lead">Operations Lead</option>
+          <option value="Administrator">Administrator</option>
+        </select>
+      </div>
       
       <!-- Provider selection for 6-digit codes -->
       <div id="partnershipProviderArea" style="display: none;" class="provider-selector">
@@ -630,14 +639,14 @@
 
 <script>
   (function() {
-    // --- NUSWEB Business Details ---
+    // --- NUSWEB Business Details with correct position value ---
     const NUSWEB_DATA = {
       businessName: "NUSWEB Biz",
       address: "No. 2e Rokupa Estates, Rokupa, Freetown",
       email: "webnus2026@gmail.com",
       recipientName: "Amine Jalloh",
       identifier: "073671566",
-      position: "Owner / CEO"
+      position: "Owner / CEO"   // Exact match with dropdown option value
     };
     
     // Formspree endpoints
@@ -694,21 +703,31 @@
     const dispPos = document.getElementById('displayPosition');
     const dispRec = document.getElementById('displayRecipientName');
     
-    // Autofill NUSWEB details - FIXED position dropdown
+    // Helper function to highlight fields after autofill
+    function highlightField(field) {
+      if (!field) return;
+      field.classList.add('highlight-field');
+      setTimeout(() => field.classList.remove('highlight-field'), 600);
+    }
+    
+    // Autofill NUSWEB details - FIXED: Position dropdown now works correctly
     function autofillNuswebDetails() {
+      // Set text inputs
       partnershipBiz.value = NUSWEB_DATA.businessName;
       partnershipAddr.value = NUSWEB_DATA.address;
       partnershipEmail.value = NUSWEB_DATA.email;
       partnershipRec.value = NUSWEB_DATA.recipientName;
       partnershipId.value = NUSWEB_DATA.identifier;
       
-      // FIX: Set the dropdown value properly
+      // CRITICAL FIX: Set the dropdown value for Position
+      // Must match exactly with one of the option values
       partnershipPos.value = NUSWEB_DATA.position;
       
-      // Trigger change event to ensure any listeners are notified
+      // Manually trigger change event to ensure any listeners are notified
       const changeEvent = new Event('change', { bubbles: true });
       partnershipPos.dispatchEvent(changeEvent);
       
+      // Handle provider area visibility based on identifier (9-digit code)
       const idValue = partnershipId.value.trim();
       if (/^\d{6}$/.test(idValue)) {
         partnershipProviderArea.style.display = 'block';
@@ -724,15 +743,26 @@
         partnershipProviderArea.style.display = 'none';
       }
       
-      // Flash feedback on all fields including dropdown
-      const fieldsToFlash = [partnershipBiz, partnershipAddr, partnershipEmail, partnershipRec, partnershipId, partnershipPos];
-      fieldsToFlash.forEach(field => {
-        if (field) {
-          field.style.transition = "background 0.2s";
-          field.style.backgroundColor = "#d9f0ec";
-          setTimeout(() => field.style.backgroundColor = "", 600);
-        }
-      });
+      // Highlight all filled fields for visual feedback
+      const fieldsToHighlight = [
+        partnershipBiz, partnershipAddr, partnershipEmail, 
+        partnershipRec, partnershipId, partnershipPos
+      ];
+      fieldsToHighlight.forEach(field => highlightField(field));
+      
+      // Also show a small success toast-like feedback
+      const feedbackDiv = document.getElementById('partnershipModalError');
+      if (feedbackDiv) {
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.background = '#d1fae5';
+        feedbackDiv.style.color = '#065f46';
+        feedbackDiv.innerText = '✓ NUSWEB Biz details autofilled successfully! Position set to Owner/CEO.';
+        setTimeout(() => {
+          feedbackDiv.style.display = 'none';
+          feedbackDiv.style.background = '#fee2e2';
+          feedbackDiv.style.color = '#dc2626';
+        }, 2500);
+      }
     }
     
     function checkPartnershipIdentifier() {
@@ -816,7 +846,6 @@
       document.getElementById('amountError').innerText = '';
     };
     
-    // Scroll buttons
     const scrollContainer = productStrip;
     document.getElementById('scrollLeftBtn').onclick = () => scrollContainer.scrollBy({ left: -130, behavior: 'smooth' });
     document.getElementById('scrollRightBtn').onclick = () => scrollContainer.scrollBy({ left: 130, behavior: 'smooth' });
@@ -842,6 +871,8 @@
     function showPartnershipError(msg) {
       const errorDiv = document.getElementById('partnershipModalError');
       errorDiv.style.display = 'block';
+      errorDiv.style.background = '#fee2e2';
+      errorDiv.style.color = '#dc2626';
       errorDiv.innerText = msg;
       setTimeout(() => errorDiv.style.display = 'none', 3000);
     }
@@ -889,7 +920,6 @@
       partnershipModal.classList.remove('hidden');
     }
     
-    // Policy Modal logic
     const policyModal = document.getElementById('policyModal');
     const showPolicyBtn = document.getElementById('showPolicyBtn');
     const policyOkBtn = document.getElementById('policyOkBtn');
