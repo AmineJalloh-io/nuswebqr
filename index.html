@@ -1,227 +1,942 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>NUSWeb Biz · Business Details</title>
-    <!-- Google Fonts & modern styling -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>DirectPay+ Business | Smart QR & Autofill</title>
+  <!-- QR Code Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
 
-        body {
-            background: linear-gradient(145deg, #eef2f7 0%, #dce5ec 100%);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 1.5rem;
-        }
+    body {
+      background: linear-gradient(135deg, #eef2f7 0%, #d4dfed 100%);
+      min-height: 100vh;
+      padding: 0.8rem;
+      overflow-x: hidden;
+    }
 
-        /* main container - full width business card, no QR panel */
-        .premium-card {
-            max-width: 800px;
-            width: 100%;
-            background: #ffffff;
-            border-radius: 2.5rem;
-            box-shadow: 0 35px 60px -20px rgba(0, 0, 0, 0.35);
-            overflow: hidden;
-            transition: all 0.2s;
-            border: 1px solid rgba(255,255,245,0.6);
-        }
+    @media (min-width: 640px) {
+      body { padding: 1rem; }
+    }
+    @media (min-width: 1024px) {
+      body { padding: 2rem 1.5rem; }
+    }
 
-        /* header with NUSWeb Biz brand */
-        .brand-header {
-            background: #0A1128;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            border-bottom: 4px solid #F4C542;
-        }
-        .brand-header h1 {
-            font-size: 2.3rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            color: white;
-            margin: 0;
-        }
-        .brand-header p {
-            color: #cad2e9;
-            margin-top: 0.4rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
+    .main-content {
+      max-width: 1300px;
+      margin: 0 auto;
+      transition: filter 0.3s ease;
+      overflow-x: hidden;
+    }
 
-        /* single column layout - business details only */
-        .business-container {
-            padding: 2rem 2rem 2rem 2rem;
-            background: #fefeff;
-        }
+    .main-content.blurred {
+      filter: blur(4px);
+      pointer-events: none;
+      user-select: none;
+    }
 
-        /* business card styling */
-        .info-section {
-            background: #ffffff;
-            border-radius: 1.5rem;
-        }
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #1f5e7e;
-            margin: 0 0 1.2rem 0;
-            border-left: 5px solid #f4b942;
-            padding-left: 14px;
-        }
-        .detail-card {
-            background: #fafdff;
-            border-radius: 1.5rem;
-            padding: 0;
-        }
-        /* compact rows — minimal spacing */
-        .detail-row {
-            display: flex;
-            align-items: baseline;
-            flex-wrap: wrap;
-            padding: 0.6rem 0.8rem;
-            border-bottom: 1px solid #eff2f8;
-        }
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        .detail-label {
-            font-weight: 700;
-            min-width: 130px;
-            color: #1f4459;
-            font-size: 0.85rem;
-        }
-        .detail-value {
-            color: #1a2e3c;
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: #eff5fa;
-            padding: 0.3rem 0.9rem;
-            border-radius: 2rem;
-            display: inline-block;
-        }
-        .helper-note {
-            font-size: 0.7rem;
-            margin-top: 1.4rem;
-            background: #eef3fc;
-            padding: 0.8rem 1rem;
-            border-radius: 1.2rem;
-            text-align: center;
-            color: #2c5a72;
-        }
-        .footer-note {
-            text-align: center;
-            font-size: 0.7rem;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e9eff4;
-            color: #5a6e7c;
-        }
-        @media (max-width: 550px) {
-            .business-container {
-                padding: 1.2rem;
-            }
-            .detail-row {
-                flex-direction: column;
-                gap: 6px;
-                align-items: flex-start;
-            }
-            .detail-label {
-                min-width: auto;
-            }
-            .brand-header h1 {
-                font-size: 1.6rem;
-            }
-        }
-    </style>
+    .front-card {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, #0b2b3f, #1a4a6e);
+      padding: 1rem;
+      color: white;
+      text-align: center;
+    }
+
+    .hero-section h1 {
+      font-size: 1.3rem;
+      word-break: break-word;
+    }
+    .hero-section p {
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+
+    @media (min-width: 640px) {
+      .hero-section { padding: 1.2rem; }
+      .hero-section h1 { font-size: 1.6rem; }
+    }
+    @media (min-width: 1024px) {
+      .hero-section { padding: 1.8rem 2rem; }
+      .hero-section h1 { font-size: 2rem; }
+    }
+
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    @media (min-width: 900px) {
+      .two-col-grid {
+        grid-template-columns: 1fr 1.2fr;
+        gap: 1.5rem;
+        padding: 1.5rem;
+      }
+    }
+    @media (min-width: 1200px) {
+      .two-col-grid { gap: 2rem; padding: 2rem; }
+    }
+
+    .client-panel, .merchant-panel {
+      background: white;
+      border-radius: 1.2rem;
+      padding: 1rem;
+      border: 1px solid #e2edf7;
+      overflow-x: hidden;
+    }
+
+    .info-card {
+      background: #f1f5f9;
+      border-radius: 1rem;
+      padding: 0.8rem;
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      word-break: break-word;
+    }
+
+    .info-card p {
+      margin: 0.4rem 0;
+    }
+
+    .product-strip-wrapper {
+      margin-bottom: 1rem;
+      background: #f8fafc;
+      border-radius: 1rem;
+      padding: 0.5rem;
+      overflow-x: hidden;
+    }
+
+    .product-strip-wrapper h4 {
+      font-size: 0.7rem;
+      color: #334155;
+      margin-bottom: 0.4rem;
+    }
+
+    .scroll-container {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      width: 100%;
+    }
+
+    .scroll-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 2rem;
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #1e293b;
+      transition: all 0.2s;
+    }
+
+    .scroll-btn:active {
+      transform: scale(0.95);
+    }
+
+    .scrollable-products-compact {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.4rem;
+      padding-bottom: 0.3rem;
+      scroll-behavior: smooth;
+      flex: 1;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scrollable-products-compact::-webkit-scrollbar {
+      height: 3px;
+    }
+
+    .product-card-compact {
+      flex: 0 0 62px;
+      background: white;
+      border-radius: 0.7rem;
+      padding: 0.25rem 0.1rem;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+
+    .product-card-compact:active {
+      transform: scale(0.97);
+    }
+
+    .product-emoji-compact {
+      font-size: 1.2rem;
+      display: block;
+    }
+
+    .product-name-compact {
+      font-size: 0.48rem;
+      font-weight: 600;
+      margin: 0.15rem 0 0.05rem;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      max-width: 58px;
+    }
+
+    .product-price-compact {
+      font-size: 0.45rem;
+      color: #f97316;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .selected-product-tag {
+      margin-top: 0.3rem;
+      font-size: 0.6rem;
+      background: #e6f7ff;
+      padding: 0.15rem 0.4rem;
+      border-radius: 1.5rem;
+      display: inline-block;
+      color: #0c4a6e;
+      word-break: break-word;
+    }
+
+    .form-group {
+      margin-bottom: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    input, select {
+      padding: 0.6rem 0.7rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 0.9rem;
+      font-size: 0.8rem;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .form-group { margin-bottom: 1rem; }
+      .form-group label { font-size: 0.8rem; }
+      input, select { padding: 0.7rem 0.8rem; font-size: 0.85rem; }
+    }
+
+    input.readonly-field, select.readonly-field {
+      background-color: #f1f5f9;
+      cursor: not-allowed;
+    }
+
+    .radio-group-row, .provider-radio-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      background: #f8fafc;
+      padding: 0.4rem 0.7rem;
+      border-radius: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .provider-radio-group {
+      background: #eef2ff;
+      margin-top: 0.3rem;
+    }
+
+    .policy-confirm-area {
+      background: #f1f5f9;
+      border-radius: 1rem;
+      padding: 0.6rem 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 0.8rem 0;
+    }
+
+    .pay-button, .release-button, .gen-id-button, .reset-btn, .prices-btn {
+      width: 100%;
+      padding: 0.65rem;
+      border: none;
+      border-radius: 2rem;
+      font-weight: 700;
+      margin-top: 0.6rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .pay-button { background: #f97316; color: white; }
+    .release-button { background: #2c7da0; color: white; }
+    .gen-id-button { background: #8b5cf6; color: white; width: auto; margin-top: 0; padding: 0.6rem 1rem; white-space: nowrap; }
+    .reset-btn { background: #e2e8f0; color: #1e293b; }
+    .prices-btn { background: #0b2b3f; color: white; margin-top: 0; transition: background 0.2s, transform 0.1s; }
+    .prices-btn.highlight-green { background: #10b981; color: white; box-shadow: 0 2px 8px rgba(16,185,129,0.4); }
+
+    .button-group {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.6rem;
+    }
+    .button-group .reset-btn {
+      margin-top: 0;
+    }
+    .button-group .prices-btn {
+      margin-top: 0;
+    }
+
+    .ussd-output {
+      background: #f1f5f9;
+      border-radius: 1rem;
+      padding: 0.7rem;
+      margin-top: 0.8rem;
+      border-left: 4px solid #f97316;
+      word-break: break-all;
+    }
+
+    .copy-btn, .dial-btn {
+      background: #e2e8f0;
+      border: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-size: 0.7rem;
+      margin-right: 0.5rem;
+    }
+
+    .provider-selector {
+      margin: 0.5rem 0;
+    }
+
+    /* QR Card */
+    .qr-card {
+      background: #ffffff;
+      border-radius: 1rem;
+      margin-top: 1rem;
+      padding: 0.8rem;
+      text-align: center;
+      border: 2px dashed #cbd5e1;
+      transition: all 0.2s;
+    }
+    .qr-card h4 {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: #0f172a;
+    }
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin: 0.5rem auto;
+    }
+    .autofill-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.6rem;
+      margin: 0.8rem 0 0.2rem;
+    }
+    .autofill-btn {
+      background: linear-gradient(135deg, #1e3c4c, #0f2c3a);
+      border: none;
+      padding: 0.4rem 0.7rem;
+      border-radius: 2rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: 0.1s linear;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .autofill-btn:active {
+      transform: scale(0.96);
+    }
+    .quick-badge {
+      font-size: 0.7rem;
+      background: #e6f7f0;
+      display: inline-block;
+      border-radius: 1rem;
+      padding: 0.1rem 0.6rem;
+      margin-bottom: 0.3rem;
+      color: #0b5e42;
+    }
+    
+    /* Partnership Modal Styles */
+    .partnership-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+      visibility: visible;
+      opacity: 1;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+    .partnership-modal-overlay.hidden {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .partnership-modal {
+      background: white;
+      border-radius: 2rem;
+      max-width: 520px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 50px rgba(0,0,0,0.4);
+    }
+    .partnership-modal-header {
+      background: linear-gradient(135deg, #0b2b3f, #1a4a6e);
+      color: white;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .partnership-modal-body {
+      padding: 1.5rem;
+    }
+    .partnership-modal-footer {
+      padding: 1rem 1.5rem 1.5rem;
+    }
+    .btn-partnership {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      border-radius: 2rem;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .policy-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+    .policy-modal-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+    .policy-modal {
+      background: white;
+      border-radius: 1.8rem;
+      max-width: 480px;
+      width: 90%;
+      overflow: hidden;
+      box-shadow: 0 30px 50px rgba(0,0,0,0.3);
+    }
+    .policy-modal-header {
+      background: linear-gradient(135deg, #0b2b3f, #1a4a6e);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .policy-modal-body {
+      padding: 1.5rem;
+    }
+    .policy-text {
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .policy-ok-btn {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .error-text {
+      color: #dc2626;
+      font-size: 0.65rem;
+      margin-top: 0.2rem;
+    }
+  </style>
 </head>
 <body>
 
-<div class="premium-card">
-    <!-- Header: NUSWeb Biz -->
-    <div class="brand-header">
-        <h1>NUSWeb Biz</h1>
-        <p>DirectPay+ · Business Commerce Hub</p>
+<!-- PARTNERSHIP REGISTRATION MODAL -->
+<div id="partnershipModal" class="partnership-modal-overlay">
+  <div class="partnership-modal">
+    <div class="partnership-modal-header">
+      <h2>📋 Partnership Registration</h2>
+      <p>Complete your Partner Business profile to continue</p>
     </div>
+    <div class="partnership-modal-body">
+      <!-- Quick autofill row inside modal -->
+      <div style="margin-bottom: 1rem; text-align: center;">
+        <span class="quick-badge">⚡ Quick Autofill (NUSWEB Biz data)</span>
+        <div class="autofill-row">
+          <button type="button" id="modalAutofillBtn" class="autofill-btn" style="background:#2c5e6e;">📲 Autofill Form</button>
+        </div>
+      </div>
+      <div class="form-group"><label>🏢 Business name *</label><input type="text" id="partnershipBizName" placeholder="Legal business name"></div>
+      <div class="form-group"><label>📍 Business address *</label><input type="text" id="partnershipAddress" placeholder="Full address"></div>
+      <div class="form-group"><label>📧 Email address *</label><input type="email" id="partnershipEmail" placeholder="contact@business.com"></div>
+      <div class="form-group"><label>👤 Recipient Name *</label><input type="text" id="partnershipRecipientName" placeholder="Full name of recipient"></div>
+      <div class="form-group"><label>📞 9-digit phone OR 6-digit agent code *</label><input type="text" id="partnershipIdentifier" placeholder="e.g., 761234567 or 892345"><div id="partnershipIdentifierError" class="error-text"></div></div>
+      <div class="form-group"><label>💼 Your position *</label><select id="partnershipPosition"><option value="" disabled selected>– Select –</option><option>Owner / CEO</option><option>Manager</option><option>Accountant</option><option>Sales Representative</option><option>Operations Lead</option><option>Administrator</option></select></div>
+      
+      <div id="partnershipProviderArea" style="display: none;" class="provider-selector">
+        <label>📱 Select Mobile Money Provider:</label>
+        <div class="provider-radio-group">
+          <label><input type="radio" name="partnershipProvider" value="afrimoney"> 📱 Afrimoney</label>
+          <label><input type="radio" name="partnershipProvider" value="orangemoney"> 🍊 Orange Money</label>
+        </div>
+        <div id="partnershipProviderHint" class="error-text" style="color:#0c4a6e;"></div>
+      </div>
+      
+      <div id="partnershipModalError" class="error-text" style="background:#fee2e2; padding:0.5rem; border-radius:0.5rem; display:none;"></div>
+    </div>
+    <div class="partnership-modal-footer">
+      <button id="confirmPartnershipBtn" class="btn-partnership">✅ Register Partnership & Continue</button>
+    </div>
+  </div>
+</div>
 
-    <!-- ONLY BUSINESS DETAILS — QR code completely removed -->
-    <div class="business-container">
-        <div class="info-section">
-            <div class="section-title">📋 BUSINESS CREDENTIALS</div>
-            <div class="detail-card">
-                <!-- Business Name -->
-                <div class="detail-row">
-                    <span class="detail-label">🏢 Business Name:</span>
-                    <span class="detail-value">NUSWeb Biz</span>
-                </div>
-                <!-- Business Address -->
-                <div class="detail-row">
-                    <span class="detail-label">📍 Address:</span>
-                    <span class="detail-value">No. 22e Rokupa Estates, Rokupa Freetown</span>
-                </div>
-                <!-- Email -->
-                <div class="detail-row">
-                    <span class="detail-label">📧 Email:</span>
-                    <span class="detail-value">aminemohamedjallohh@gmail.com</span>
-                </div>
-                <!-- Recipient Name -->
-                <div class="detail-row">
-                    <span class="detail-label">👤 Recipient Name:</span>
-                    <span class="detail-value">Amine Jalloh</span>
-                </div>
-                <!-- Identifier -->
-                <div class="detail-row">
-                    <span class="detail-label">🆔 Identifier:</span>
-                    <span class="detail-value">073671566</span>
-                </div>
-                <!-- Position: Owner/CEO -->
-                <div class="detail-row">
-                    <span class="detail-label">💼 Your Position:</span>
-                    <span class="detail-value">Owner/CEO</span>
-                </div>
-            </div>
-            
-            <div class="helper-note">
-                ✨ <strong>Business Information</strong> — Complete credentials for DirectPay+ transactions.<br>
-                💡 Use these details for seamless checkout and verification.
-            </div>
+<!-- POLICY MODAL -->
+<div id="policyModal" class="policy-modal-overlay">
+  <div class="policy-modal">
+    <div class="policy-modal-header">
+      <h2>📜 DirectPay+ User Policy</h2>
+      <p>Please read carefully</p>
+    </div>
+    <div class="policy-modal-body">
+      <div class="policy-text">
+        📜 Dear valuable user!<br><br>
+        <strong>DirectPay+</strong> thanks you for choosing us. Please be reminded that your attention is required.<br><br>
+        ✓ Type correct Names, Phone numbers, Amount, Addresses as mistakes may lead to miss‑transfers.<br><br>
+        ✓ If issues arise from our side we take responsibility. Please use this application responsibly.
+      </div>
+      <button id="policyOkBtn" class="policy-ok-btn">✅ OK, I Understand</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content" id="mainContent">
+  <div class="front-card">
+    <div class="hero-section">
+      <h1>⚡ DirectPay+ Business</h1>
+      <p>In few touches - Make Payments</p>
+    </div>
+    <div class="two-col-grid">
+      <div class="client-panel">
+        <h3>🤝 Partner Business</h3>
+        <div class="info-card">
+          <p><strong>Business:</strong> <span id="displayBizName">—</span></p>
+          <p><strong>Address:</strong> <span id="displayAddress">—</span></p>
+          <p><strong>Identifier:</strong> <span id="displayIdentifier">—</span></p>
+          <p><strong>Position:</strong> <span id="displayPosition">—</span></p>
+          <p><strong>Recipient:</strong> <span id="displayRecipientName">—</span></p>
+        </div>
+        <!-- QR Code Section -->
+        <div class="qr-card">
+          <h4>📱 Scan QR — Business Card</h4>
+          <div id="qrcode"></div>
+          <p style="font-size:0.6rem; color:#4b5563; margin-top:6px;">NUSWEB Biz contact & registration data</p>
+        </div>
+        <div class="button-group">
+          <button id="resetRegistrationBtn" class="reset-btn">🔄 Reset Partnership</button>
+          <button id="pricesButton" class="prices-btn">💰 Prices</button>
+        </div>
+      </div>
+      
+      <div class="merchant-panel">
+        <h3>📄 DirectPay Transaction</h3>
+        <div class="product-strip-wrapper">
+          <h4>🛒 Quick pick (click to select product & enable Prices button)</h4>
+          <div class="scroll-container">
+            <button class="scroll-btn" id="scrollLeftBtn">◀</button>
+            <div class="scrollable-products-compact" id="productStripCompact"></div>
+            <button class="scroll-btn" id="scrollRightBtn">▶</button>
+          </div>
+          <div id="selectedProductCompactInfo" class="selected-product-tag" style="display: none;"></div>
         </div>
         
-        <div class="footer-note">
-            🔒 Secure Business Credentials · NUSWeb Biz Platform
+        <div class="form-group"><label>Business name</label><input type="text" id="merchantBizName" class="readonly-field" readonly></div>
+        <div class="form-group"><label>Address</label><input type="text" id="merchantAddress" class="readonly-field" readonly></div>
+        <div class="form-group"><label>Identifier</label><input type="text" id="merchantIdentifier" class="readonly-field" readonly></div>
+        <div class="form-group"><label>Position</label><input type="text" id="merchantPosition" class="readonly-field" readonly></div>
+        <div class="form-group"><label>🔢 Serial Number</label><input type="text" id="serialNumberField" class="readonly-field" readonly value="--"></div>
+        
+        <div class="form-group">
+          <label>💰 Amount (Le) *</label>
+          <input type="number" id="amountInput" placeholder="Enter amount or use product price via Prices button">
+          <div id="amountError" class="error-text"></div>
         </div>
+        
+        <div class="form-group"><label>📝 Recipient Name *</label><input type="text" id="recipientNameField" class="readonly-field" readonly placeholder="Auto-filled"></div>
+        
+        <div class="form-group"><label>📂 Business category *</label><select id="businessType"><option value="" disabled selected>– Select –</option><option>Electricals & Electronics</option><option>Groceries</option><option>Food</option><option>Cars & Trucks</option><option>Construction</option><option>Stationary</option><option>Rent</option><option>transportation</option><option>Services</option><option>School</option><option>Jewelry</option><option>Fruits and Veggies</option></select></div>
+        
+        <div class="form-group"><label>🔖 Transaction ID <span style="color:#dc2626;">*</span></label><div style="display: flex; gap: 0.5rem; flex-wrap: wrap;"><input type="text" id="transactionIdField" class="readonly-field" readonly style="flex:1;"><button id="generateIdBtn" class="gen-id-button">🔄 Generate</button></div><div id="txIdError" class="error-text"></div></div>
+        
+        <div class="form-group"><label>📄 Transaction agreement</label><div class="radio-group-row"><label><input type="radio" name="transactionAgreement" value="Yes"> ✅ Yes</label><label><input type="radio" name="transactionAgreement" value="No"> ❌ No</label></div></div>
+        
+        <div class="policy-confirm-area">
+          <button id="showPolicyBtn" class="policy-trigger-btn" style="background:#1e293b; color:white; border:none; padding:0.4rem 0.8rem; border-radius:2rem; font-size:0.75rem; cursor:pointer;">📜 Read Policy</button>
+          <span id="policyStatusMsg" style="color:#b91c1c; font-size:0.7rem;">⚠️ Not confirmed</span>
+        </div>
+        
+        <button id="releaseFundsBtn" class="release-button">📞 Release Funds (Open Dialer)</button>
+        <div id="ussdOutputArea" style="display:none;" class="ussd-output"><strong>USSD Code:</strong><br><code id="ussdCodeText" style="word-break:break-all;"></code><br><button id="copyUssdBtn" class="copy-btn">📋 Copy</button><button id="dialUssdBtn" class="dial-btn">📞 Open Dialer</button></div>
+        
+        <button id="payBtn" class="pay-button">💰 PAY</button>
+        <div id="merchantFeedback" style="display:none; margin-top:0.8rem; padding:0.6rem; border-radius:1rem; font-size:0.75rem;"></div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-    (function() {
-        // Optional: Add mailto functionality for email field (non-intrusive)
-        const emailRow = Array.from(document.querySelectorAll('.detail-row')).find(row => row.innerText.includes('aminemohamedjallohh@gmail.com'));
-        if(emailRow && !emailRow.querySelector('.email-extra')) {
-            const mailLink = document.createElement('a');
-            mailLink.href = "mailto:aminemohamedjallohh@gmail.com";
-            mailLink.innerText = "📧 Send email";
-            mailLink.style.marginLeft = "10px";
-            mailLink.style.fontSize = "0.7rem";
-            mailLink.style.textDecoration = "none";
-            mailLink.style.background = "#eef2fa";
-            mailLink.style.padding = "0.2rem 0.7rem";
-            mailLink.style.borderRadius = "20px";
-            mailLink.style.color = "#1f5e7e";
-            mailLink.classList.add('email-extra');
-            emailRow.appendChild(mailLink);
-        }
-        
-        console.log("✅ NUSWeb Biz — Business details displayed, QR code removed.");
-    })();
+  (function() {
+    // ---------- FIXED BUSINESS DATA ----------
+    const DEFAULT_BIZ = {
+      businessName: "NUSWEB Biz",
+      address: "No. 2e Rokupa Estates, Rokupa, Freetown",
+      email: "aminemohamedjalloh@gmail.com",
+      recipientName: "Amine Jalloh",
+      identifier: "073671566",   // 9 digit
+      position: "Owner / CEO"
+    };
+    
+    // Formspree endpoints
+    const REGISTRATION_ENDPOINT = "https://formspree.io/f/mzdqdbeb";
+    const MERCHANT_ENDPOINT = "https://formspree.io/f/mrevegpy";
+    
+    const GROUP_ONE = ["076","074","073","079","078","075"];
+    const GROUP_TWO = ["077","088","099","080","090","070","030","033"];
+    
+    const products = [
+      { name: "Desktop Set", price: 2500, emoji: "🖥️", category: "Electronics", sku: "DTP-001" },
+      { name: "System Unit", price: 800, emoji: "💻", category: "Computers", sku: "SYS-002" },
+      { name: "Monitor", price: 500, emoji: "🖥️", category: "Displays", sku: "MON-003" },
+      { name: "Kbd+Mouse+Cbl", price: 450, emoji: "🔌", category: "Accessories", sku: "KMC-004" },
+      { name: "Galaxy A06", price: 120000, emoji: "📱", category: "Mobile", sku: "SGA-005" },
+      { name: "Galaxy A07", price: 150000, emoji: "📱", category: "Mobile", sku: "SGA-006" },
+      { name: "Galaxy A16", price: 200000, emoji: "📱", category: "Mobile", sku: "SGA-007" },
+      { name: "Mobile Accs", price: 450, emoji: "📱🔧", category: "Accessories", sku: "MAC-008" },
+      { name: "Website Dev", price: 1500, emoji: "🌐", category: "Services", sku: "WEB-009" },
+      { name: "Mobile App", price: 2500, emoji: "📲", category: "Software", sku: "APP-010" }
+    ];
+    
+    // DOM elements
+    const productStrip = document.getElementById('productStripCompact');
+    const amountInput = document.getElementById('amountInput');
+    const selectedInfo = document.getElementById('selectedProductCompactInfo');
+    const pricesButton = document.getElementById('pricesButton');
+    let currentProduct = null;
+    
+    // Partnership Modal elements
+    const partnershipModal = document.getElementById('partnershipModal');
+    const partnershipBiz = document.getElementById('partnershipBizName');
+    const partnershipAddr = document.getElementById('partnershipAddress');
+    const partnershipEmail = document.getElementById('partnershipEmail');
+    const partnershipRec = document.getElementById('partnershipRecipientName');
+    const partnershipId = document.getElementById('partnershipIdentifier');
+    const partnershipPos = document.getElementById('partnershipPosition');
+    const partnershipProviderArea = document.getElementById('partnershipProviderArea');
+    const afriRadio = document.querySelector('input[name="partnershipProvider"][value="afrimoney"]');
+    const orangeRadio = document.querySelector('input[name="partnershipProvider"][value="orangemoney"]');
+    let selectedProvider = null;
+    
+    // Main display fields
+    const mBiz = document.getElementById('merchantBizName');
+    const mAddr = document.getElementById('merchantAddress');
+    const mId = document.getElementById('merchantIdentifier');
+    const mPos = document.getElementById('merchantPosition');
+    const serialField = document.getElementById('serialNumberField');
+    const recipientField = document.getElementById('recipientNameField');
+    const dispBiz = document.getElementById('displayBizName');
+    const dispAddr = document.getElementById('displayAddress');
+    const dispId = document.getElementById('displayIdentifier');
+    const dispPos = document.getElementById('displayPosition');
+    const dispRec = document.getElementById('displayRecipientName');
+    
+    // Helper: autofill modal with default NUSWEB data
+    function autofillPartnershipModal() {
+      partnershipBiz.value = DEFAULT_BIZ.businessName;
+      partnershipAddr.value = DEFAULT_BIZ.address;
+      partnershipEmail.value = DEFAULT_BIZ.email;
+      partnershipRec.value = DEFAULT_BIZ.recipientName;
+      partnershipId.value = DEFAULT_BIZ.identifier;
+      partnershipPos.value = DEFAULT_BIZ.position;
+      // trigger provider logic for 9-digit (no provider required)
+      checkPartnershipIdentifier();
+      // clear any provider selection if 9-digit (no provider needed)
+      if (/^\d{9}$/.test(DEFAULT_BIZ.identifier)) {
+        if (afriRadio) afriRadio.checked = false;
+        if (orangeRadio) orangeRadio.checked = false;
+        selectedProvider = null;
+      }
+      const errDiv = document.getElementById('partnershipModalError');
+      if(errDiv) errDiv.style.display = 'none';
+    }
+    
+    // Provider logic
+    function checkPartnershipIdentifier() {
+      const idValue = partnershipId.value.trim();
+      if (/^\d{6}$/.test(idValue)) {
+        partnershipProviderArea.style.display = 'block';
+        if (afriRadio) afriRadio.checked = false;
+        if (orangeRadio) orangeRadio.checked = false;
+        selectedProvider = null;
+        const hint = document.getElementById('partnershipProviderHint');
+        if (hint) hint.innerText = "✓ 6-digit code detected. Please select a provider.";
+      } else {
+        partnershipProviderArea.style.display = 'none';
+        selectedProvider = null;
+        if (afriRadio) afriRadio.checked = false;
+        if (orangeRadio) orangeRadio.checked = false;
+      }
+    }
+    
+    partnershipId.addEventListener('input', checkPartnershipIdentifier);
+    if (afriRadio) afriRadio.addEventListener('change', () => { if (afriRadio.checked) selectedProvider = 'afrimoney'; });
+    if (orangeRadio) orangeRadio.addEventListener('change', () => { if (orangeRadio.checked) selectedProvider = 'orangemoney'; });
+    
+    function generateUssdCode(identifier, amountValue) {
+      const is6Digit = /^\d{6}$/.test(identifier);
+      const is9Digit = /^\d{9}$/.test(identifier);
+      const amount = parseInt(amountValue);
+      if (is9Digit) {
+        const prefix = identifier.substring(0,3);
+        if (GROUP_ONE.includes(prefix)) return `#144*2*1*${identifier}*${amount}*${amount}#`;
+        else if (GROUP_TWO.includes(prefix)) return `*161*1*1*${identifier}*${amount}*0000#`;
+        return null;
+      } else if (is6Digit && selectedProvider) {
+        if (selectedProvider === 'afrimoney') return `*161*1*2*${identifier}*${amount}*0000#`;
+        else if (selectedProvider === 'orangemoney') return `#144*2*2*${identifier}*${amount}*0000#`;
+        return null;
+      }
+      return null;
+    }
+    
+    function buildStrip() {
+      productStrip.innerHTML = '';
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card-compact';
+        card.innerHTML = `<span class="product-emoji-compact">${p.emoji}</span><div class="product-name-compact">${p.name}</div><div class="product-price-compact">${p.price.toLocaleString()} L</div>`;
+        card.onclick = () => {
+          currentProduct = p;
+          amountInput.value = p.price;
+          selectedInfo.style.display = 'inline-block';
+          selectedInfo.innerHTML = `✅ Selected: ${p.name} (${p.price.toLocaleString()} Le) — Click "Prices" for details`;
+          amountInput.dispatchEvent(new Event('input'));
+          pricesButton.classList.add('highlight-green');
+          document.querySelectorAll('.product-card-compact').forEach(c => c.style.backgroundColor = '');
+          card.style.backgroundColor = '#e6f7e6';
+          setTimeout(() => card.style.backgroundColor = '', 200);
+        };
+        productStrip.appendChild(card);
+      });
+    }
+    
+    pricesButton.onclick = () => {
+      if (!currentProduct) { showFeedback("⚠️ No product selected. Tap a product first.", "error"); return; }
+      alert(`📦 Product Details\n\nName: ${currentProduct.name}\nPrice: ${currentProduct.price.toLocaleString()} Le\nCategory: ${currentProduct.category}\nSKU: ${currentProduct.sku}\n\nClick OK to add price to Amount field.`);
+      amountInput.value = currentProduct.price;
+      document.getElementById('amountError').innerText = '';
+    };
+    
+    document.getElementById('scrollLeftBtn').onclick = () => productStrip.scrollBy({ left: -130, behavior: 'smooth' });
+    document.getElementById('scrollRightBtn').onclick = () => productStrip.scrollBy({ left: 130, behavior: 'smooth' });
+    
+    let serialCounter = 1;
+    const SERIAL_KEY = "global_serial_counter";
+    function loadSerial() { const stored = localStorage.getItem(SERIAL_KEY); serialCounter = (stored && !isNaN(parseInt(stored))) ? parseInt(stored) : 1; localStorage.setItem(SERIAL_KEY, serialCounter); }
+    function incrementSerial() { serialCounter++; localStorage.setItem(SERIAL_KEY, serialCounter); }
+    function randDigits(len) { return Math.floor(Math.random()*Math.pow(10,len)).toString().padStart(len,'0'); }
+    function genTxId() { return `NW${randDigits(7)}.${randDigits(5)}.M${randDigits(7)}`; }
+    
+    function isRegistered() { return localStorage.getItem('partnershipRegistered') === 'true'; }
+    function savePartnership(data) { localStorage.setItem('partnershipRegistered', 'true'); localStorage.setItem('partnershipData', JSON.stringify(data)); }
+    function clearPartnership() { localStorage.removeItem('partnershipRegistered'); localStorage.removeItem('partnershipData'); }
+    
+    function fillMainForms(data) {
+      mBiz.value = data.businessName || ''; mAddr.value = data.address || ''; mId.value = data.identifier || ''; mPos.value = data.position || '';
+      serialField.value = data.serialNumber || '--'; recipientField.value = data.recipientName || '';
+      dispBiz.innerText = data.businessName || '—'; dispAddr.innerText = data.address || '—'; dispId.innerText = data.identifier || '—';
+      dispPos.innerText = data.position || '—'; dispRec.innerText = data.recipientName || '—';
+    }
+    
+    function showPartnershipError(msg) { const errorDiv = document.getElementById('partnershipModalError'); errorDiv.style.display = 'block'; errorDiv.innerText = msg; setTimeout(() => errorDiv.style.display = 'none', 3000); }
+    
+    function validatePartnership() {
+      const biz = partnershipBiz.value.trim(), addr = partnershipAddr.value.trim(), email = partnershipEmail.value.trim();
+      const rec = partnershipRec.value.trim(), id = partnershipId.value.trim(), pos = partnershipPos.value;
+      if (!biz || !addr || !email || !rec || !id || !pos) { showPartnershipError("All fields required."); return false; }
+      if (!/^\S+@\S+\.\S+$/.test(email)) { showPartnershipError("Invalid email."); return false; }
+      const is9d = /^\d{9}$/.test(id), is6c = /^\d{6}$/.test(id);
+      if (!is9d && !is6c) { showPartnershipError("Identifier: 9 digits or 6 digits."); return false; }
+      if (is6c && !selectedProvider) { showPartnershipError("For 6-digit code, please select a provider."); return false; }
+      return true;
+    }
+    
+    function completePartnership() {
+      if (!validatePartnership()) return;
+      const serialNum = `SN-${String(serialCounter).padStart(5,'0')}`;
+      const partnershipData = {
+        businessName: partnershipBiz.value.trim(), address: partnershipAddr.value.trim(), email: partnershipEmail.value.trim(),
+        recipientName: partnershipRec.value.trim(), identifier: partnershipId.value.trim(), position: partnershipPos.value,
+        provider: selectedProvider, serialNumber: serialNum, registeredAt: new Date().toISOString()
+      };
+      savePartnership(partnershipData);
+      fillMainForms(partnershipData);
+      incrementSerial();
+      document.getElementById('transactionIdField').value = genTxId();
+      partnershipModal.classList.add('hidden');
+      // reset internal fields but leave autofill
+      const fd = new FormData(); Object.keys(partnershipData).forEach(k => fd.append(k, partnershipData[k]));
+      fetch(REGISTRATION_ENDPOINT, { method: "POST", body: fd }).catch(e=>console.log);
+    }
+    
+    function fullReset() {
+      clearPartnership();
+      mBiz.value = ''; mAddr.value = ''; mId.value = ''; mPos.value = ''; serialField.value = '--'; recipientField.value = '';
+      dispBiz.innerText = '—'; dispAddr.innerText = '—'; dispId.innerText = '—'; dispPos.innerText = '—'; dispRec.innerText = '—';
+      document.getElementById('transactionIdField').value = '';
+      amountInput.value = ''; document.getElementById('businessType').value = '';
+      document.querySelectorAll('input[name="transactionAgreement"]').forEach(r => r.checked = false);
+      document.getElementById('ussdOutputArea').style.display = 'none';
+      selectedInfo.style.display = 'none'; selectedInfo.innerHTML = ''; currentProduct = null;
+      pricesButton.classList.remove('highlight-green');
+      policyOkFlag = false; policyStatusSpan.innerHTML = "⚠️ Not confirmed"; policyStatusSpan.style.color = "#b91c1c";
+      partnershipModal.classList.remove('hidden');
+      // reset modal fields to default quickly?
+      autofillPartnershipModal();
+    }
+    
+    // Policy Modal
+    const policyModal = document.getElementById('policyModal');
+    const showPolicyBtn = document.getElementById('showPolicyBtn');
+    const policyOkBtn = document.getElementById('policyOkBtn');
+    let policyOkFlag = false;
+    const policyStatusSpan = document.getElementById('policyStatusMsg');
+    showPolicyBtn.onclick = () => { policyModal.classList.add('active'); };
+    policyOkBtn.onclick = () => { policyOkFlag = true; policyStatusSpan.innerHTML = "✅ Policy agreed"; policyStatusSpan.style.color = "#15803d"; policyModal.classList.remove('active'); };
+    
+    const feedback = document.getElementById('merchantFeedback');
+    function showFeedback(msg, type) { feedback.style.display = 'block'; feedback.innerHTML = msg; feedback.style.background = type === 'error' ? '#fee2e2' : '#e0f2fe'; feedback.style.borderLeft = `4px solid ${type === 'error' ? '#dc2626' : '#0284c7'}`; if (type !== 'error') setTimeout(() => feedback.style.display = 'none', 5000); }
+    
+    const release = document.getElementById('releaseFundsBtn');
+    const ussdArea = document.getElementById('ussdOutputArea');
+    const ussdCodeSpan = document.getElementById('ussdCodeText');
+    const copyUssd = document.getElementById('copyUssdBtn');
+    const dialUssd = document.getElementById('dialUssdBtn');
+    const txField = document.getElementById('transactionIdField');
+    
+    function handleRelease() {
+      if (!txField.value) { showFeedback("Generate Transaction ID first", "error"); return; }
+      const identifier = mId.value.trim();
+      const amountVal = amountInput.value.trim();
+      if (!identifier) { showFeedback("Identifier missing", "error"); return; }
+      if (!amountVal || isNaN(amountVal) || parseInt(amountVal) <= 0) { document.getElementById('amountError').innerText = "Valid amount needed"; showFeedback("Enter amount", "error"); return; }
+      const ussd = generateUssdCode(identifier, amountVal);
+      if (ussd) { ussdCodeSpan.innerText = ussd; ussdArea.style.display = 'block'; window.location.href = `tel:${encodeURIComponent(ussd)}`; }
+      else { showFeedback("Unable to generate USSD. Check identifier/provider.", "error"); ussdArea.style.display = 'none'; }
+    }
+    release.onclick = handleRelease;
+    copyUssd.onclick = () => { if (ussdCodeSpan.innerText) { navigator.clipboard.writeText(ussdCodeSpan.innerText); copyUssd.innerText = "✅ Copied!"; setTimeout(() => copyUssd.innerText = "📋 Copy", 1500); } };
+    dialUssd.onclick = () => { if (ussdCodeSpan.innerText) window.location.href = `tel:${encodeURIComponent(ussdCodeSpan.innerText)}`; else showFeedback("No USSD", "error"); };
+    
+    const pay = document.getElementById('payBtn');
+    function processPay() {
+      if (!policyOkFlag) { showFeedback("Please read and agree to the policy first.", "error"); return; }
+      if (!isRegistered()) { showFeedback("Partnership registration required.", "error"); return; }
+      showFeedback("✅ Payment recorded successfully! Transaction submitted.", "success");
+      setTimeout(() => {
+        amountInput.value = ''; document.getElementById('businessType').value = '';
+        document.querySelectorAll('input[name="transactionAgreement"]').forEach(r => r.checked = false);
+        ussdArea.style.display = 'none'; selectedInfo.style.display = 'none'; selectedInfo.innerHTML = ''; currentProduct = null;
+        pricesButton.classList.remove('highlight-green');
+        document.getElementById('transactionIdField').value = genTxId();
+      }, 2000);
+    }
+    pay.onclick = processPay;
+    
+    document.getElementById('generateIdBtn').onclick = () => { txField.value = genTxId(); document.getElementById('txIdError').innerText = ""; showFeedback("New TX ID generated", "info"); };
+    amountInput.oninput = () => { const err = document.getElementById('amountError'); if (amountInput.value && parseInt(amountInput.value) > 0) err.innerText = ""; else if (amountInput.value) err.innerText = "Positive number"; else err.innerText = ""; };
+    document.getElementById('resetRegistrationBtn').onclick = fullReset;
+    document.getElementById('confirmPartnershipBtn').onclick = completePartnership;
+    
+    // QR code generation with Business Card data
+    function generateQR() {
+      const qrData = `Business: NUSWEB Biz\nAddress: No. 2e Rokupa Estates, Rokupa, Freetown\nEmail: aminemohamedjalloh@gmail.com\nRecipient: Amine Jalloh\nIdentifier: 073671566\nPosition: Owner/CEO`;
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "";
+      new QRCode(qrContainer, { text: qrData, width: 128, height: 128, colorDark: "#0b2b3f", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+    }
+    
+    // Modal autofill button
+    const modalAutofill = document.getElementById('modalAutofillBtn');
+    if(modalAutofill) modalAutofill.onclick = () => autofillPartnershipModal();
+    
+    if (isRegistered()) {
+      const saved = localStorage.getItem('partnershipData');
+      if (saved) { try { fillMainForms(JSON.parse(saved)); } catch(e) {} }
+      if (!txField.value) txField.value = genTxId();
+      partnershipModal.classList.add('hidden');
+    } else {
+      partnershipModal.classList.remove('hidden');
+      autofillPartnershipModal();
+    }
+    
+    buildStrip();
+    loadSerial();
+    generateQR();
+  })();
 </script>
 </body>
 </html>
