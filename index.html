@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>DirectPay+ Business | Smart Payments & Product Pricing</title>
-  <!-- QRCode.js library -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -334,49 +332,6 @@
       margin: 0.5rem 0;
     }
 
-    /* QR & Autofill section inside modal */
-    .quick-setup-area {
-      background: #f0f9ff;
-      border-radius: 1rem;
-      padding: 0.8rem;
-      margin-bottom: 1.2rem;
-      border: 1px solid #b9e2fa;
-    }
-    .quick-setup-area h4 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #075985;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .qr-container {
-      display: flex;
-      justify-content: center;
-      margin: 0.5rem 0;
-    }
-    .autofill-row {
-      display: flex;
-      justify-content: center;
-      margin-top: 0.5rem;
-    }
-    .autofill-row button {
-      background: #2c7da0;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 2rem;
-      font-weight: 600;
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: background 0.2s;
-      width: 100%;
-    }
-    .autofill-row button:active {
-      transform: scale(0.97);
-    }
-    
     /* Partnership Modal Styles */
     .partnership-modal-overlay {
       position: fixed;
@@ -498,14 +453,41 @@
       max-width: 100%;
     }
     
-    .highlight-autofill {
+    /* Quick setup area (without QR) */
+    .quick-setup-area {
+      background: #f0f9ff;
+      border-radius: 1rem;
+      padding: 0.8rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid #b9e2fa;
+      text-align: center;
+    }
+    .quick-setup-area h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #075985;
+      margin-bottom: 0.75rem;
+    }
+    .autofill-row button {
+      background: #2c7da0;
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      width: 100%;
       transition: background 0.2s;
+    }
+    .autofill-row button:active {
+      transform: scale(0.97);
     }
   </style>
 </head>
 <body>
 
-<!-- PARTNERSHIP REGISTRATION MODAL with QR and Autofill for NUSWEB Biz -->
+<!-- PARTNERSHIP REGISTRATION MODAL with Autofill for NUSWEB Biz (QR removed) -->
 <div id="partnershipModal" class="partnership-modal-overlay">
   <div class="partnership-modal">
     <div class="partnership-modal-header">
@@ -514,14 +496,13 @@
     </div>
     <div class="partnership-modal-body">
       
-      <!-- QUICK SETUP: NUSWEB Biz details with QR & Autofill -->
+      <!-- QUICK SETUP: NUSWEB Biz Autofill (QR removed) -->
       <div class="quick-setup-area">
         <h4>🔹 NUSWEB Biz Quick Setup</h4>
-        <div id="qrcodeContainer" class="qr-container"></div>
         <div class="autofill-row">
           <button id="autofillNuswebBtn">⚡ Autofill NUSWEB Business Details</button>
         </div>
-        <p style="font-size:0.7rem; margin-top:0.5rem; text-align:center; color:#155e75;">Scan QR to capture business details instantly</p>
+        <p style="font-size:0.7rem; margin-top:0.6rem; color:#155e75;">Click to instantly fill the form with NUSWEB Biz credentials</p>
       </div>
       
       <div class="form-group"><label>🏢 Business name *</label><input type="text" id="partnershipBizName" placeholder="Legal business name"></div>
@@ -549,7 +530,7 @@
   </div>
 </div>
 
-<!-- POLICY MODAL (unchanged) -->
+<!-- POLICY MODAL -->
 <div id="policyModal" class="policy-modal-overlay">
   <div class="policy-modal">
     <div class="policy-modal-header">
@@ -641,7 +622,7 @@
 
 <script>
   (function() {
-    // --- NEW BUSINESS DETAILS: NUSWEB Biz ---
+    // --- NUSWEB Business Details (no QR) ---
     const NUSWEB_DATA = {
       businessName: "NUSWEB Biz",
       address: "No. 2e Rokupa Estates, Rokupa, Freetown",
@@ -653,13 +634,12 @@
     
     // Formspree endpoints
     const REGISTRATION_ENDPOINT = "https://formspree.io/f/mzdqdbeb";
-    const MERCHANT_ENDPOINT = "https://formspree.io/f/mrevegpy";
     
-    // Prefix groups for USSD generation (073 falls into GROUP_ONE)
+    // USSD prefix groups (073 belongs to GROUP_ONE)
     const GROUP_ONE = ["076","074","073","079","078","075"];
     const GROUP_TWO = ["077","088","099","080","090","070","030","033"];
     
-    // Products list (unchanged)
+    // Products list
     const products = [
       { name: "Desktop Set", price: 2500, emoji: "🖥️", category: "Electronics", sku: "DTP-001" },
       { name: "System Unit", price: 800, emoji: "💻", category: "Computers", sku: "SYS-002" },
@@ -706,24 +686,7 @@
     const dispPos = document.getElementById('displayPosition');
     const dispRec = document.getElementById('displayRecipientName');
     
-    // Generate QR with NUSWEB Biz data
-    function generateNuswebQR() {
-      const qrContainer = document.getElementById('qrcodeContainer');
-      if (qrContainer) {
-        qrContainer.innerHTML = "";
-        const qrText = `Business: NUSWEB Biz\nAddress: No. 2e Rokupa Estates, Rokupa, Freetown\nEmail: webnus2026@gmail.com\nRecipient: Amine Jalloh\nIdentifier: 073671566\nPosition: Owner/CEO`;
-        new QRCode(qrContainer, {
-          text: qrText,
-          width: 120,
-          height: 120,
-          colorDark: "#0b2b3f",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      }
-    }
-    
-    // Autofill NUSWEB details
+    // Autofill NUSWEB details (no QR)
     function autofillNuswebDetails() {
       partnershipBiz.value = NUSWEB_DATA.businessName;
       partnershipAddr.value = NUSWEB_DATA.address;
@@ -732,7 +695,6 @@
       partnershipId.value = NUSWEB_DATA.identifier;
       partnershipPos.value = NUSWEB_DATA.position;
       
-      // Trigger identifier validation for provider area (9-digit in this case)
       const idValue = partnershipId.value.trim();
       if (/^\d{6}$/.test(idValue)) {
         partnershipProviderArea.style.display = 'block';
@@ -748,7 +710,7 @@
         partnershipProviderArea.style.display = 'none';
       }
       
-      // Flash effect on fields
+      // Flash feedback
       [partnershipBiz, partnershipAddr, partnershipEmail, partnershipRec, partnershipId, partnershipPos].forEach(field => {
         field.style.transition = "background 0.2s";
         field.style.backgroundColor = "#d9f0ec";
@@ -756,7 +718,6 @@
       });
     }
     
-    // Provider detection for identifier
     function checkPartnershipIdentifier() {
       const idValue = partnershipId.value.trim();
       if (/^\d{6}$/.test(idValue)) {
@@ -778,7 +739,6 @@
     if (afriRadio) afriRadio.addEventListener('change', () => { if (afriRadio.checked) selectedProvider = 'afrimoney'; });
     if (orangeRadio) orangeRadio.addEventListener('change', () => { if (orangeRadio.checked) selectedProvider = 'orangemoney'; });
     
-    // USSD generation (supports 9-digit with prefix 073 -> GROUP_ONE)
     function generateUssdCode(identifier, amountValue) {
       const is6Digit = /^\d{6}$/.test(identifier);
       const is9Digit = /^\d{9}$/.test(identifier);
@@ -804,7 +764,6 @@
       return null;
     }
     
-    // Build product strip
     function buildStrip() {
       productStrip.innerHTML = '';
       products.forEach(p => {
@@ -845,7 +804,6 @@
     document.getElementById('scrollLeftBtn').onclick = () => scrollContainer.scrollBy({ left: -130, behavior: 'smooth' });
     document.getElementById('scrollRightBtn').onclick = () => scrollContainer.scrollBy({ left: 130, behavior: 'smooth' });
     
-    // Serial & TX ID
     let serialCounter = 1;
     const SERIAL_KEY = "global_serial_counter";
     function loadSerial() { const stored = localStorage.getItem(SERIAL_KEY); serialCounter = (stored && !isNaN(parseInt(stored))) ? parseInt(stored) : 1; localStorage.setItem(SERIAL_KEY, serialCounter); }
@@ -853,7 +811,6 @@
     function randDigits(len) { return Math.floor(Math.random()*Math.pow(10,len)).toString().padStart(len,'0'); }
     function genTxId() { return `NW${randDigits(7)}.${randDigits(5)}.M${randDigits(7)}`; }
     
-    // Partnership storage
     function isRegistered() { return localStorage.getItem('partnershipRegistered') === 'true'; }
     function savePartnership(data) { localStorage.setItem('partnershipRegistered', 'true'); localStorage.setItem('partnershipData', JSON.stringify(data)); }
     function clearPartnership() { localStorage.removeItem('partnershipRegistered'); localStorage.removeItem('partnershipData'); }
@@ -913,7 +870,6 @@
       pricesButton.classList.remove('highlight-green');
       policyOkFlag = false; policyStatusSpan.innerHTML = "⚠️ Not confirmed"; policyStatusSpan.style.color = "#b91c1c";
       partnershipModal.classList.remove('hidden');
-      generateNuswebQR();  // regenerate QR when modal reappears
     }
     
     // Policy Modal logic
@@ -935,7 +891,6 @@
       if (type !== 'error') setTimeout(() => feedback.style.display = 'none', 5000);
     }
     
-    // Release Funds
     const release = document.getElementById('releaseFundsBtn');
     const ussdArea = document.getElementById('ussdOutputArea');
     const ussdCodeSpan = document.getElementById('ussdCodeText');
@@ -957,7 +912,6 @@
     copyUssd.onclick = () => { if (ussdCodeSpan.innerText) { navigator.clipboard.writeText(ussdCodeSpan.innerText); copyUssd.innerText = "✅ Copied!"; setTimeout(() => copyUssd.innerText = "📋 Copy", 1500); } };
     dialUssd.onclick = () => { if (ussdCodeSpan.innerText) window.location.href = `tel:${encodeURIComponent(ussdCodeSpan.innerText)}`; else showFeedback("No USSD", "error"); };
     
-    // Pay button
     const pay = document.getElementById('payBtn');
     function processPay() {
       if (!policyOkFlag) { showFeedback("Please read and agree to the policy first.", "error"); return; }
@@ -977,12 +931,8 @@
     amountInput.oninput = () => { const err = document.getElementById('amountError'); if (amountInput.value && parseInt(amountInput.value) > 0) err.innerText = ""; else if (amountInput.value) err.innerText = "Positive number"; else err.innerText = ""; };
     document.getElementById('resetRegistrationBtn').onclick = fullReset;
     document.getElementById('confirmPartnershipBtn').onclick = completePartnership;
+    document.getElementById('autofillNuswebBtn').addEventListener('click', autofillNuswebDetails);
     
-    // Autofill button event
-    const autofillBtn = document.getElementById('autofillNuswebBtn');
-    if (autofillBtn) autofillBtn.addEventListener('click', autofillNuswebDetails);
-    
-    // Initial load check
     if (isRegistered()) {
       const saved = localStorage.getItem('partnershipData');
       if (saved) { try { fillMainForms(JSON.parse(saved)); } catch(e) {} }
@@ -990,12 +940,10 @@
       partnershipModal.classList.add('hidden');
     } else {
       partnershipModal.classList.remove('hidden');
-      generateNuswebQR();
     }
     
     buildStrip();
     loadSerial();
-    if (!isRegistered()) generateNuswebQR();
   })();
 </script>
 </body>
